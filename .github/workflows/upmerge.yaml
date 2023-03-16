@@ -1,4 +1,4 @@
-name: Upmerge release branches
+name: Create Upmerge PR
 
 # Schedule this workflow to run every 15 minutes
 on:
@@ -7,13 +7,13 @@ on:
   push:
    branches: [ "release/**" ]
 jobs:
-  trigger-tag:
+  upmerge-pr:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         repo: [ codespaces-actions-playground ]
     steps:
-      - name: Creteate pull requests to upmerge branches to main
+      - name: Create pull requests to upmerge branches to main
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.ACAS_WORKFLOWS_TOKEN }}
@@ -91,22 +91,23 @@ jobs:
                   head: sourceBranch,
                   base: targetBranch
                 })
+                var pullRequestNumber = pullRequest.data.number
                 // Assign the pull request to the assignee
                 await github.rest.issues.addAssignees({
                   owner: "brianbolt",
                   repo: "${{ matrix.repo }}",
-                  issue_number: pullRequest.data.number,
+                  issue_number: pullRequestNumber,
                   assignees: [assignee]
                 })
               } else {
                 // Set the pull request to the existing one
-                var pullRequest = pullRequests.data[0]
+                var pullRequestNumber = pullRequests.data[0]
               }
               // Add the upmerge label to the pull request
               await github.rest.issues.addLabels({
                 owner: "brianbolt",
                 repo: "${{ matrix.repo }}",
-                issue_number: pullRequest.data.number,
+                issue_number: pullRequestNumber,
                 labels: ["upmerge"]
               })
               // Add the reviewers to the pull request if there are any
@@ -114,9 +115,9 @@ jobs:
                 await github.rest.pulls.requestReviewers({
                   owner: "brianbolt",
                   repo: "${{ matrix.repo }}",
-                  pull_number: pullRequest.data.number,
+                  pull_number: pullRequestNumber,
                   reviewers: uniqueReviewers
                 })
               }
-              console.log(`Created pull request ${pullRequest.data.number}`)
+              console.log(`Created pull request ${pullRequestNumber}`)
             }
