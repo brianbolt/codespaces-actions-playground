@@ -84,12 +84,13 @@ jobs:
               // If brian bolt is a reviewer, remove him but tag him in the description
               add_brianbolt = false
               if (uniqueReviewers.includes("brianbolt")) {
+                console.log("Removing brianbolt from reviewers because he can't create the pr and review it at the same time")
                 uniqueReviewers.splice(uniqueReviewers.indexOf("brianbolt"), 1)
                 add_brianbolt = true
               }
               // Create the description for the pull request
               const description = "## Description\n\n" +
-                "This pull request was created by the upmerge workflow.\n\n"  
+                "This pull request was created by the upmerge workflow.\n\n" +
                 "## Reviewers\n\n" +
                 uniqueReviewers.map(reviewer => `@${reviewer}`).join(" ") + "\n\n" +
                 (add_brianbolt ? "@brianbolt" : "")
