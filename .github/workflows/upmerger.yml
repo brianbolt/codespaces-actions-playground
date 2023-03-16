@@ -1,0 +1,26 @@
+name: Upmerge release branches
+
+# Schedule this workflow to run every 15 minutes
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+jobs:
+  uppmerger:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        repo: [ codespaces-actions-playground ]
+    steps:
+      - name: Creteate pull requests to upmerge branches to main
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.ACAS_WORKFLOWS_TOKEN }}
+          script: |
+            // Get all protected branches
+            const protectedBranches = await github.rest.repos.listBranches({
+              owner: "brianbolt",
+              repo: "${{ matrix.repo }}"
+            })
+            // Print them all
+            console.log(protectedBranches.data.map(branch => branch.name))
