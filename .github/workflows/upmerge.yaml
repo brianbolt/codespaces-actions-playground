@@ -91,13 +91,6 @@ jobs:
                   head: sourceBranch,
                   base: targetBranch
                 }).data
-                // Assign the pull request to the assignee
-                await github.rest.issues.addAssignees({
-                  owner: "brianbolt",
-                  repo: "${{ matrix.repo }}",
-                  issue_number: pullRequest.number,
-                  assignees: [assignee]
-                })
               } else {
                 // Set the pull request to the existing one
                 var pullRequest = pullRequests.data[0]
@@ -118,6 +111,16 @@ jobs:
                   repo: "${{ matrix.repo }}",
                   pull_number: pullRequest.number,
                   reviewers: uniqueReviewers
+                })
+              }
+              // If the PR doesnn't already have an assignee then add it
+              if (pullRequest.assignee == null) {
+                // Assign the pull request to the assignee
+                await github.rest.issues.addAssignees({
+                  owner: "brianbolt",
+                  repo: "${{ matrix.repo }}",
+                  issue_number: pullRequest.number,
+                  assignees: [assignee]
                 })
               }
               console.log(`Created pull request ${pullRequest.number}`)
