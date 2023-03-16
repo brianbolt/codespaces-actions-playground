@@ -24,3 +24,5 @@ jobs:
               repo: "${{ matrix.repo }}",
               protected: true
             })
+            // Print all the branch
+            console.log(protectedBranches.data.map(branch => branch.name))
