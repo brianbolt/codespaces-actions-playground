@@ -52,12 +52,23 @@ jobs:
                 console.log(`No diffs between ${sourceBranch} and ${targetBranch}`)
                 continue
               }
+              // Description should be a list of changes
+              const description = diff.data.files.map(file => `- ${file.filename}`).join("\r\n")
+              // Create the pull request
               const pullRequest = await github.rest.pulls.create({
                 owner: "brianbolt",
                 repo: "${{ matrix.repo }}",
                 title: `Upmerge ${sourceBranch} to ${targetBranch}`,
+                body: description,
                 head: sourceBranch,
                 base: targetBranch
+              })
+              // Add the upmerge label to the pull request
+              await github.rest.issues.addLabels({
+                owner: "brianbolt",
+                repo: "${{ matrix.repo }}",
+                issue_number: pullRequest.data.number,
+                labels: ["upmerge"]
               })
               console.log(`Created pull request ${pullRequest.data.number}`)
             }
