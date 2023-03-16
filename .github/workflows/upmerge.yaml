@@ -1,0 +1,53 @@
+name: Upmerge release branches
+
+# Schedule this workflow to run every 15 minutes
+on:
+  workflow_dispatch:
+  # Trigger on new commits to release branches
+  push:
+   branches: [ "**" ]
+jobs:
+  trigger-tag:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        repo: [ codespaces-actions-playground ]
+    steps:
+      - name: Creteate pull requests to upmerge branches to main
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.ACAS_WORKFLOWS_TOKEN }}
+          script: |
+            // Get all protected branches
+            const protectedBranches = await github.rest.repos.listBranches({
+              owner: "brianbolt",
+              repo: "${{ matrix.repo }}",
+              protected: true
+            })
+            // Print all the branch
+            console.log(protectedBranches.data.map(branch => branch.name))
+            // Shift through the branches and create a pull request for each to the next branch in the list
+            for (let i = 0; i < protectedBranches.data.length - 1; i++) {
+              const sourceBranch = protectedBranches.data[i].name
+              const targetBranch = protectedBranches.data[i + 1].name
+              console.log(`Creating pull request from ${sourceBranch} to ${targetBranch}`)
+              // Check if there are diffs between the 2 branches
+              const diff = await github.rest.repos.compareCommits({
+                owner: "brianbolt",
+                repo: "${{ matrix.repo }}",
+                base: targetBranch,
+                head: sourceBranch
+              })
+              if (diff.data.files.length === 0) {
+                console.log(`No diffs between ${sourceBranch} and ${targetBranch}`)
+                continue
+              }
+              const pullRequest = await github.rest.pulls.create({
+                owner: "brianbolt",
+                repo: "${{ matrix.repo }}",
+                title: `Upmerge ${sourceBranch} to ${targetBranch}`,
+                head: sourceBranch,
+                base: targetBranch
+              })
+              console.log(`Created pull request ${pullRequest.data.number}`)
+            }
