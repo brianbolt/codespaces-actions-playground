@@ -100,7 +100,7 @@ jobs:
               })
               // 
               // Add the reviewers to the pull request
-              await github.rest.pulls.octokit.rest.pulls.requestReviewers({
+              await github.rest.pulls.requestReviewers({
                 owner: "brianbolt",
                 repo: "${{ matrix.repo }}",
                 pull_number: pullRequest.data.number,
