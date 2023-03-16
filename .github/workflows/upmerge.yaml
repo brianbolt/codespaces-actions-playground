@@ -77,11 +77,22 @@ jobs:
                   state: "closed"
                 })
               }
-              // Reviewers for the PR should be anyone with commits in the diff 
+              // Create a unique set of reviewers: Reviewers for the PR should be anyone with commits in the diff 
               const reviewers = diff.data.commits.map(commit => commit.author.login)
+              // Remove any duplicate reviewers
+              const uniqueReviewers = [...new Set(reviewers)]
+              // If brian bolt is a reviewer, remove him but tag him in the description
+              add_brianbolt = false
+              if (uniqueReviewers.includes("brianbolt")) {
+                uniqueReviewers.splice(uniqueReviewers.indexOf("brianbolt"), 1)
+                add_brianbolt = true
+              }
               // Create the description for the pull request
               const description = "## Description\n\n" +
                 "This pull request was created by the upmerge workflow.\n\n"  
+                "## Reviewers\n\n" +
+                uniqueReviewers.map(reviewer => `@${reviewer}`).join(" ") + "\n\n" +
+                (add_brianbolt ? "@brianbolt" : "")
               // Create the pull request
               const pullRequest = await github.rest.pulls.create({
                 owner: "brianbolt",
@@ -98,7 +109,6 @@ jobs:
                 issue_number: pullRequest.data.number,
                 labels: ["upmerge"]
               })
-              // 
               // Add the reviewers to the pull request
               await github.rest.pulls.requestReviewers({
                 owner: "brianbolt",
