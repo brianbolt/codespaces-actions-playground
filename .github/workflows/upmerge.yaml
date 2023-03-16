@@ -24,8 +24,18 @@ jobs:
               repo: "${{ matrix.repo }}",
               protected: true
             })
-            // Print all the branch
+            // Print all the protected branches
             console.log(protectedBranches.data.map(branch => branch.name))
+            // Sort the branches by name but always have master or main at the end
+            protectedBranches.data.sort((a, b) => {
+              if (a.name === "master" || a.name === "main") {
+                return 1
+              }
+              if (b.name === "master" || b.name === "main") {
+                return -1
+              }
+              return a.name.localeCompare(b.name)
+            })
             // Shift through the branches and create a pull request for each to the next branch in the list
             for (let i = 0; i < protectedBranches.data.length - 1; i++) {
               const sourceBranch = protectedBranches.data[i].name
