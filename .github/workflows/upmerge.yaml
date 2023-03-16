@@ -102,6 +102,8 @@ jobs:
                 // Set the pull request to the existing one
                 var pullRequest = pullRequests.data[0]
               }
+              // Print the pull request
+              console.log(pullRequest)
               // Add the upmerge label to the pull request
               await github.rest.issues.addLabels({
                 owner: "brianbolt",
