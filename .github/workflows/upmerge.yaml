@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
   # Trigger on new commits to release branches
   push:
-   branches: [ "**" ]
+   branches: [ "release/**" ]
 jobs:
   trigger-tag:
     runs-on: ubuntu-latest
@@ -36,7 +36,7 @@ jobs:
               }
               return a.name.localeCompare(b.name)
             })
-            // Shift through the branches and create a pull request for each to the next branch in the list
+            // Loop through the branches and create required PRs based on diffs
             for (let i = 0; i < protectedBranches.data.length - 1; i++) {
               const sourceBranch = protectedBranches.data[i].name
               const targetBranch = protectedBranches.data[i + 1].name
@@ -60,23 +60,6 @@ jobs:
                 head: sourceBranch,
                 base: targetBranch
               })
-              // Delete the pull request if it already exists
-              if (pullRequests.data.length > 0) {
-                console.log(`Deleting pull request ${pullRequests.data[0].number}`)
-                // Write a comment first then close it
-                await github.rest.issues.createComment({
-                  owner: "brianbolt",
-                  repo: "${{ matrix.repo }}",
-                  issue_number: pullRequests.data[0].number,
-                  body: "This pull request was closed because it has been superseded by another pull request."
-                })
-                await github.rest.pulls.update({
-                  owner: "brianbolt",
-                  repo: "${{ matrix.repo }}",
-                  pull_number: pullRequests.data[0].number,
-                  state: "closed"
-                })
-              }
               // Create a unique set of reviewers: Reviewers for the PR should be anyone with commits in the diff 
               const reviewers = diff.data.commits.map(commit => commit.author.login)
               // Get the most recent commit author to be the assignee
@@ -90,28 +73,32 @@ jobs:
                 uniqueReviewers.splice(uniqueReviewers.indexOf("brianbolt"), 1)
                 add_brianbolt = true
               }
-              // Create the description for the pull request
-              const description = "## Description\n\n" +
+              // If the PR exists then add any missing reviewers
+              if (pullRequests.data.length == 0) {
+                // If the PR doesn't exist then create it
+                // Create the description for the pull request
+                const description = "## Description\n\n" +
                 "This pull request was created by the upmerge workflow.\n\n" +
                 "## Reviewers\n\n" +
                 uniqueReviewers.map(reviewer => `@${reviewer}`).join(" ") + "\n\n" +
                 (add_brianbolt ? "@brianbolt" : "")
-              // Create the pull request
-              const pullRequest = await github.rest.pulls.create({
-                owner: "brianbolt",
-                repo: "${{ matrix.repo }}",
-                title: `Upmerge ${sourceBranch} to ${targetBranch}`,
-                body: description,
-                head: sourceBranch,
-                base: targetBranch
-              })
-              // Assign the pull request to a random reviewer
-              await github.rest.issues.addAssignees({
-                owner: "brianbolt",
-                repo: "${{ matrix.repo }}",
-                issue_number: pullRequest.data.number,
-                assignees: [assignee]
-              })
+                // Create the pull request
+                const pullRequest = await github.rest.pulls.create({
+                  owner: "brianbolt",
+                  repo: "${{ matrix.repo }}",
+                  title: `Upmerge ${sourceBranch} to ${targetBranch}`,
+                  body: description,
+                  head: sourceBranch,
+                  base: targetBranch
+                })
+                // Assign the pull request to the assignee
+                await github.rest.issues.addAssignees({
+                  owner: "brianbolt",
+                  repo: "${{ matrix.repo }}",
+                  issue_number: pullRequest.data.number,
+                  assignees: [assignee]
+                })
+              }
               // Add the upmerge label to the pull request
               await github.rest.issues.addLabels({
                 owner: "brianbolt",
