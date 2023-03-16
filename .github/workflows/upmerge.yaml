@@ -19,7 +19,7 @@ jobs:
           script: |
             // Get all protected branches
             const protectedBranches = await github.rest.repos.listBranches({
-              owner: "mcneilco",
-              repo: "${{ matrix.acas-repo }}",
+              owner: "brianbolt",
+              repo: "${{ matrix.repo }}",
               protected: true
             })
