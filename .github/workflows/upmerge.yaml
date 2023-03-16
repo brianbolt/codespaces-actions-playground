@@ -101,7 +101,7 @@ jobs:
                 })
               } else {
                 // Set the pull request to the existing one
-                var pullRequestNumber = pullRequests.data[0]
+                var pullRequestNumber = pullRequests.data[0].number
               }
               // Add the upmerge label to the pull request
               await github.rest.issues.addLabels({
