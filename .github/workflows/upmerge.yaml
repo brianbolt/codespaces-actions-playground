@@ -52,8 +52,11 @@ jobs:
                 console.log(`No diffs between ${sourceBranch} and ${targetBranch}`)
                 continue
               }
-              // Description should be a list of changes
-              const description = diff.data.files.map(file => `- ${file.filename}`).join("\r\n")
+              // Reviewers for the PR should be anyone with commits in the diff 
+              const reviewers = diff.data.commits.map(commit => commit.author.login)
+              // Create the description for the pull request
+              const description = "## Description\n\n" +
+                "This pull request was created by the upmerge workflow.\n\n"
               // Create the pull request
               const pullRequest = await github.rest.pulls.create({
                 owner: "brianbolt",
@@ -69,6 +72,13 @@ jobs:
                 repo: "${{ matrix.repo }}",
                 issue_number: pullRequest.data.number,
                 labels: ["upmerge"]
+              })
+              // Add the reviewers to the pull request
+              await github.rest.pulls.createReviewRequest({
+                owner: "brianbolt",
+                repo: "${{ matrix.repo }}",
+                pull_number: pullRequest.data.number,
+                reviewers: reviewers
               })
               console.log(`Created pull request ${pullRequest.data.number}`)
             }
