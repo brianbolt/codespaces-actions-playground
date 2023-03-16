@@ -5,6 +5,9 @@ on:
   schedule:
     - cron: '*/15 * * * *'
   workflow_dispatch:
+  # Trigger on new commits to release branches
+  push:
+   branches: [ "**" ]
 jobs:
   trigger-tag:
     runs-on: ubuntu-latest
