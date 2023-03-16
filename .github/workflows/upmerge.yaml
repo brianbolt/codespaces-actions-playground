@@ -105,6 +105,6 @@ jobs:
                 repo: "${{ matrix.repo }}",
                 pull_number: pullRequest.data.number,
                 reviewers: reviewers
-              }})
+              })
               console.log(`Created pull request ${pullRequest.data.number}`)
             }
