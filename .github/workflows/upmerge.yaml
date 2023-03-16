@@ -81,6 +81,8 @@ jobs:
               const reviewers = diff.data.commits.map(commit => commit.author.login)
               // Remove any duplicate reviewers
               const uniqueReviewers = [...new Set(reviewers)]
+              // Pick a random reviewer to be the assignee
+              const assignee = uniqueReviewers[Math.floor(Math.random() * uniqueReviewers.length)]
               // If brian bolt is a reviewer, remove him but tag him in the description
               add_brianbolt = false
               if (uniqueReviewers.includes("brianbolt")) {
@@ -102,6 +104,13 @@ jobs:
                 body: description,
                 head: sourceBranch,
                 base: targetBranch
+              })
+              // Assign the pull request to a random reviewer
+              await github.rest.issues.addAssignees({
+                owner: "brianbolt",
+                repo: "${{ matrix.repo }}",
+                issue_number: pullRequest.data.number,
+                assignees: [assignee]
               })
               // Add the upmerge label to the pull request
               await github.rest.issues.addLabels({
