@@ -98,6 +98,9 @@ jobs:
                   issue_number: pullRequest.data.number,
                   assignees: [assignee]
                 })
+              } else {
+                // Set the pull request to the existing one
+                const pullRequest = pullRequests.data[0]
               }
               // Add the upmerge label to the pull request
               await github.rest.issues.addLabels({
