@@ -31,6 +31,17 @@ jobs:
               const sourceBranch = protectedBranches.data[i].name
               const targetBranch = protectedBranches.data[i + 1].name
               console.log(`Creating pull request from ${sourceBranch} to ${targetBranch}`)
+              // Check if there are diffs between the 2 branches
+              const diff = await github.rest.repos.compareCommits({
+                owner: "brianbolt",
+                repo: "${{ matrix.repo }}",
+                base: sourceBranch,
+                head: targetBranch
+              })
+              if (diff.data.files.length === 0) {
+                console.log(`No diffs between ${sourceBranch} and ${targetBranch}`)
+                continue
+              }
               const pullRequest = await github.rest.pulls.create({
                 owner: "brianbolt",
                 repo: "${{ matrix.repo }}",
