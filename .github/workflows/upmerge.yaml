@@ -2,8 +2,6 @@ name: Upmerge release branches
 
 # Schedule this workflow to run every 15 minutes
 on:
-  schedule:
-    - cron: '*/15 * * * *'
   workflow_dispatch:
   # Trigger on new commits to release branches
   push:
