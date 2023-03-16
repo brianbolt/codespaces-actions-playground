@@ -26,3 +26,17 @@ jobs:
             })
             // Print all the branch
             console.log(protectedBranches.data.map(branch => branch.name))
+            // Shift through the branches and create a pull request for each to the next branch in the list
+            for (let i = 0; i < protectedBranches.data.length - 1; i++) {
+              const sourceBranch = protectedBranches.data[i].name
+              const targetBranch = protectedBranches.data[i + 1].name
+              console.log(`Creating pull request from ${sourceBranch} to ${targetBranch}`)
+              const pullRequest = await github.rest.pulls.create({
+                owner: "brianbolt",
+                repo: "${{ matrix.repo }}",
+                title: `Upmerge ${sourceBranch} to ${targetBranch}`,
+                head: sourceBranch,
+                base: targetBranch
+              })
+              console.log(`Created pull request ${pullRequest.data.number}`)
+            }
