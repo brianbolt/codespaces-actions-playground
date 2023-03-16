@@ -83,9 +83,7 @@ jobs:
               const assignee = reviewers[reviewers.length - 1]
               // Remove any duplicate reviewers
               const uniqueReviewers = [...new Set(reviewers)]
-              // Pick a random reviewer to be the assignee
-              const assignee = uniqueReviewers[Math.floor(Math.random() * uniqueReviewers.length)]
-              // If brian bolt is a reviewer, remove him but tag him in the description
+             // If brian bolt is a reviewer, remove him but tag him in the description
               add_brianbolt = false
               if (uniqueReviewers.includes("brianbolt")) {
                 console.log("Removing brianbolt from reviewers because he can't create the pr and review it at the same time")
