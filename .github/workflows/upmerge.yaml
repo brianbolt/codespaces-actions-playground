@@ -91,23 +91,22 @@ jobs:
                   head: sourceBranch,
                   base: targetBranch
                 })
-                var pullRequestNumber = pullRequest.data.number
                 // Assign the pull request to the assignee
                 await github.rest.issues.addAssignees({
                   owner: "brianbolt",
                   repo: "${{ matrix.repo }}",
-                  issue_number: pullRequestNumber,
+                  issue_number: pullRequest.data.number,
                   assignees: [assignee]
                 })
               } else {
                 // Set the pull request to the existing one
-                var pullRequestNumber = pullRequests.data[0].number
+                var pullRequest = pullRequests.data[0]
               }
               // Add the upmerge label to the pull request
               await github.rest.issues.addLabels({
                 owner: "brianbolt",
                 repo: "${{ matrix.repo }}",
-                issue_number: pullRequestNumber,
+                issue_number: pullRequest.data.number,
                 labels: ["upmerge"]
               })
               // Add the reviewers to the pull request if there are any
@@ -115,9 +114,9 @@ jobs:
                 await github.rest.pulls.requestReviewers({
                   owner: "brianbolt",
                   repo: "${{ matrix.repo }}",
-                  pull_number: pullRequestNumber,
+                  pull_number: pullRequest.data.number,
                   reviewers: uniqueReviewers
                 })
               }
-              console.log(`Created pull request ${pullRequestNumber}`)
+              console.log(`Created pull request ${pullRequest.data.number}`)
             }
