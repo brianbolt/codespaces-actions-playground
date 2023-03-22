@@ -27,8 +27,6 @@ jobs:
               repo: "${{ matrix.repo }}",
               protected: true
             })
-            // Print all the protected branches
-            console.log(protectedBranches.data.map(branch => branch.name))
             // Sort the branches by name but always have master or main at the end
             protectedBranches.data.sort((a, b) => {
               if (a.name === "master" || a.name === "main") {
@@ -39,6 +37,7 @@ jobs:
               }
               return a.name.localeCompare(b.name)
             })
+            console.log(`Protected branches to check for diff commits: ${protectedBranches.data.map(branch => branch.name).join(", ")}`)
             // Loop through the branches and create required PRs based on diffs
             for (let i = 0; i < protectedBranches.data.length - 1; i++) {
               const sourceBranch = protectedBranches.data[i].name
@@ -75,8 +74,6 @@ jobs:
              // If apiUser is a reviewer, remove them but tag them in the description
               addApiUser = false
               if (uniqueReviewers.includes(apiUser)) {
-                console.log("Removing api user " + apiUser + " from reviewers and adding to description reviewers instead")
-                console.log("uniqueReviewers: " + uniqueReviewers)
                 uniqueReviewers.splice(uniqueReviewers.indexOf(apiUser), 1)
                 addApiUser = true
               }
@@ -99,13 +96,12 @@ jobs:
                   base: targetBranch
                 })
                 pullRequest = createPullRequestResponse.data
+                console.log(`Created pull request ${pullRequest.number}`)
               } else {
-                console.log(`Pull request from ${sourceBranch} to ${targetBranch} already exists`)
                 // Set the pull request to the existing one
                 var pullRequest = pullRequests.data[0]
+                console.log(`Pull request ${pullRequest.number} already exists between ${sourceBranch} and ${targetBranch}`)
               }
-              // Print the pull request
-              console.log(`Pull request number: ${pullRequest.number}`)
               // Add the upmerge label to the pull request
               await github.rest.issues.addLabels({
                 owner: "brianbolt",
@@ -121,16 +117,18 @@ jobs:
                   pull_number: pullRequest.number,
                   reviewers: uniqueReviewers
                 })
+                console.log(`Added reviewers to pull request ${pullRequest.number}: ${uniqueReviewers.join(", ")}`)
               }
               // If the PR doesnn't already have an assignee then add it
               if (pullRequest.assignee == null) {
                 // Assign the pull request to the assignee
+                console.log(`Pull request ${pullRequest.number} doesn't have an assignee`)
                 await github.rest.issues.addAssignees({
                   owner: "brianbolt",
                   repo: "${{ matrix.repo }}",
                   issue_number: pullRequest.number,
                   assignees: [assignee]
                 })
+                console.log(`Assigned pull request ${pullRequest.number} to ${assignee}`)
               }
-              console.log(`Created pull request ${pullRequest.number}`)
             }
