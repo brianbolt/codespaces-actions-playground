@@ -1,0 +1,131 @@
+name: Create Upmerge PR
+
+# Schedule this workflow to run every 15 minutes
+on:
+  workflow_dispatch:
+  # Trigger on new commits to release branches
+  push:
+   branches: [ "release/**" ]
+jobs:
+  upmerge-pr:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        repo: [ codespaces-actions-playground ]
+    steps:
+      - name: Create pull requests to upmerge branches to main
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.ACAS_WORKFLOWS_TOKEN }}
+          script: |
+            // Current token user
+            const response = await github.rest.users.getAuthenticated();
+            const apiUser = response.data.login;
+            // Get all protected branches
+            const protectedBranches = await github.rest.repos.listBranches({
+              owner: "brianbolt",
+              repo: "${{ matrix.repo }}",
+              protected: true
+            })
+            // Print all the protected branches
+            console.log(protectedBranches.data.map(branch => branch.name))
+            // Sort the branches by name but always have master or main at the end
+            protectedBranches.data.sort((a, b) => {
+              if (a.name === "master" || a.name === "main") {
+                return 1
+              }
+              if (b.name === "master" || b.name === "main") {
+                return -1
+              }
+              return a.name.localeCompare(b.name)
+            })
+            // Loop through the branches and create required PRs based on diffs
+            for (let i = 0; i < protectedBranches.data.length - 1; i++) {
+              const sourceBranch = protectedBranches.data[i].name
+              const targetBranch = protectedBranches.data[i + 1].name
+              console.log(`Creating pull request from ${sourceBranch} to ${targetBranch}`)
+              // Check if there are diffs between the 2 branches
+              const diff = await github.rest.repos.compareCommits({
+                owner: "brianbolt",
+                repo: "${{ matrix.repo }}",
+                base: targetBranch,
+                head: sourceBranch
+              })
+              if (diff.data.files.length === 0) {
+                console.log(`No diffs between ${sourceBranch} and ${targetBranch}`)
+                continue
+              }
+              // Check if a pull request already exists for these branches
+              const pullRequests = await github.rest.pulls.list({
+                owner: "brianbolt",
+                repo: "${{ matrix.repo }}",
+                state: "open",
+                head: sourceBranch,
+                base: targetBranch
+              })
+              // Create a unique set of reviewers: Reviewers for the PR should be anyone with commits in the diff 
+              const reviewers = diff.data.commits.map(commit => commit.author.login)
+              // Get the most recent commit author to be the assignee
+              const assignee = reviewers[reviewers.length - 1]
+              // Remove any duplicate reviewers
+              const uniqueReviewers = [...new Set(reviewers)]
+             // If apiUser is a reviewer, remove them but tag them in the description
+              addApiUser = false
+              if (uniqueReviewers.includes(apiUser)) {
+                console.log("Removing api user " + apiUser + " from reviewers")
+                console.log("uniqueReviewers: " + uniqueReviewers)
+                uniqueReviewers.splice(uniqueReviewers.indexOf(apiUser), 1)
+                addApiUser = true
+              }
+              // If the PR exists then add any missing reviewers
+              if (pullRequests.data.length == 0) {
+                // If the PR doesn't exist then create it
+                // Create the description for the pull request
+                const description = "## Description\n\n" +
+                "This pull request was created by the upmerge workflow.\n\n" +
+                "## Reviewers\n\n" +
+                uniqueReviewers.map(reviewer => `@${reviewer}`).join(" ") + "\n\n" +
+                (addApiUser ? "@brianbolt" : "")
+                // Create the pull request
+                var pullRequest = await github.rest.pulls.create({
+                  owner: "brianbolt",
+                  repo: "${{ matrix.repo }}",
+                  title: `Upmerge ${sourceBranch} to ${targetBranch}`,
+                  body: description,
+                  head: sourceBranch,
+                  base: targetBranch
+                }).data
+              } else {
+                // Set the pull request to the existing one
+                var pullRequest = pullRequests.data[0]
+              }
+              // Print the pull request
+              console.log(pullRequest)
+              // Add the upmerge label to the pull request
+              await github.rest.issues.addLabels({
+                owner: "brianbolt",
+                repo: "${{ matrix.repo }}",
+                issue_number: pullRequest.number,
+                labels: ["upmerge"]
+              })
+              // Add the reviewers to the pull request if there are any
+              if (uniqueReviewers.length > 0) {
+                await github.rest.pulls.requestReviewers({
+                  owner: "brianbolt",
+                  repo: "${{ matrix.repo }}",
+                  pull_number: pullRequest.number,
+                  reviewers: uniqueReviewers
+                })
+              }
+              // If the PR doesnn't already have an assignee then add it
+              if (pullRequest.assignee == null) {
+                // Assign the pull request to the assignee
+                await github.rest.issues.addAssignees({
+                  owner: "brianbolt",
+                  repo: "${{ matrix.repo }}",
+                  issue_number: pullRequest.number,
+                  assignees: [assignee]
+                })
+              }
+              console.log(`Created pull request ${pullRequest.number}`)
+            }
