@@ -74,7 +74,7 @@ jobs:
               if (uniqueReviewers.includes(apiUser)) {
                 console.log("Removing api user " + apiUser + " from reviewers")
                 console.log("uniqueReviewers: " + uniqueReviewers)
-                # Remove the api user from the reviewers
+                // Remove the api user from the reviewers
                 indexOfApiUser = uniqueReviewers.indexOf(apiUser)
                 uniqueReviewers.splice(indexOfApiUser, 1)
                 addApiUser = true
