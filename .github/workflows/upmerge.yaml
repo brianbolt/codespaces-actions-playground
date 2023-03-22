@@ -1,9 +1,15 @@
 name: Create Upmerge PR
 
-# Schedule this workflow to run every 15 minutes
+# **What it does**: Loops through protected branches and creates pull requests to upmerge them if there are any commits between them.
+# **Why we have it**: To automate the process of upmerging branches.
+
 on:
+  # Run every 3 hours on the hour
+  schedule:
+    - cron: "0 */3 * * *"
+  # Trigger on demand
   workflow_dispatch:
-  # Trigger on new commits to release branches
+  # Trigger on new commits to release branches for acas repo
   push:
    branches: [ "release/**" ]
 jobs:
@@ -12,6 +18,7 @@ jobs:
     strategy:
       matrix:
         repo: [ codespaces-actions-playground ]
+        owner: [ "brianbolt" ]
     steps:
       - name: Create pull requests to upmerge branches to main
         uses: actions/github-script@v6
@@ -23,7 +30,7 @@ jobs:
             const apiUser = getAuthenticatedUserResponse.data.login;
             // Get all protected branches
             const protectedBranches = await github.rest.repos.listBranches({
-              owner: "brianbolt",
+              owner: "${{ matrix.owner }}",
               repo: "${{ matrix.repo }}",
               protected: true
             })
@@ -45,7 +52,7 @@ jobs:
               console.log(`Checking commits between ${sourceBranch} to ${targetBranch}`)
               // Check if there are diffs between the 2 branches
               const diff = await github.rest.repos.compareCommits({
-                owner: "brianbolt",
+                owner: "${{ matrix.owner }}",
                 repo: "${{ matrix.repo }}",
                 base: targetBranch,
                 head: sourceBranch
@@ -59,7 +66,7 @@ jobs:
               }
               // Check if a pull request already exists for these branches
               const pullRequests = await github.rest.pulls.list({
-                owner: "brianbolt",
+                owner: "${{ matrix.owner }}",
                 repo: "${{ matrix.repo }}",
                 state: "open",
                 head: sourceBranch,
@@ -88,9 +95,9 @@ jobs:
                 
                 // Create the pull request
                 const createPullRequestResponse = await github.rest.pulls.create({
-                  owner: "brianbolt",
+                  owner: "${{ matrix.owner }}",
                   repo: "${{ matrix.repo }}",
-                  title: `⬆️ Umerge ${sourceBranch} to ${targetBranch}`,
+                  title: `⬆️ Upmerge ${sourceBranch} to ${targetBranch}`,
                   body: description,
                   head: sourceBranch,
                   base: targetBranch
@@ -104,15 +111,15 @@ jobs:
               }
               // Add the upmerge label to the pull request
               await github.rest.issues.addLabels({
-                owner: "brianbolt",
+                owner: "${{ matrix.owner }}",
                 repo: "${{ matrix.repo }}",
                 issue_number: pullRequest.number,
-                labels: ["⬆️ Upmerge"]
+                labels: ["upmerge"]
               })
               // Add the reviewers to the pull request if there are any
               if (uniqueReviewers.length > 0) {
                 await github.rest.pulls.requestReviewers({
-                  owner: "brianbolt",
+                  owner: "${{ matrix.owner }}",
                   repo: "${{ matrix.repo }}",
                   pull_number: pullRequest.number,
                   reviewers: uniqueReviewers
@@ -123,7 +130,7 @@ jobs:
               if (pullRequest.assignee == null) {
                 // Assign the pull request to the assignee
                 await github.rest.issues.addAssignees({
-                  owner: "brianbolt",
+                  owner: "${{ matrix.owner }}",
                   repo: "${{ matrix.repo }}",
                   issue_number: pullRequest.number,
                   assignees: [assignee]
