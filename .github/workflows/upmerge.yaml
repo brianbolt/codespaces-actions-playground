@@ -27,8 +27,6 @@ jobs:
               repo: "${{ matrix.repo }}",
               protected: true
             })
-            // Print all the protected branches
-            console.log(protectedBranches.data.map(branch => branch.name))
             // Sort the branches by name but always have master or main at the end
             protectedBranches.data.sort((a, b) => {
               if (a.name === "master" || a.name === "main") {
@@ -39,6 +37,7 @@ jobs:
               }
               return a.name.localeCompare(b.name)
             })
+            console.log("Checking all protected branches: " + protectedBranches.data.map(branch => branch.name).join(", ")
             // Loop through the branches and create required PRs based on diffs
             for (let i = 0; i < protectedBranches.data.length - 1; i++) {
               const sourceBranch = protectedBranches.data[i].name
@@ -100,12 +99,10 @@ jobs:
                 pullRequest = createPullRequestResponse.data
                 console.log(`Created pull request ${pullRequest.number}`)
               } else {
-                console.log(`Pull request from ${sourceBranch} to ${targetBranch} already exists`)
                 // Set the pull request to the existing one
                 var pullRequest = pullRequests.data[0]
+                console.log(`Pull request ${pullRequest.number} already exists between ${sourceBranch} and ${targetBranch}`)
               }
-              // Print the pull request
-              console.log(`Pull request number: ${pullRequest.number}`)
               // Add the upmerge label to the pull request
               await github.rest.issues.addLabels({
                 owner: "brianbolt",
