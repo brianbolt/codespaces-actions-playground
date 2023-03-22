@@ -85,7 +85,7 @@ jobs:
                 "This pull request was created by the upmerge workflow.\n\n" +
                 "## Reviewers\n\n" +
                 uniqueReviewers.map(reviewer => `@${reviewer}`).join(" ") + "\n\n" +
-                (addApiUser ? "@brianbolt" : "")
+                (addApiUser ? `@${apiUser}` : "")
                 // Create the pull request
                 var pullRequest = await github.rest.pulls.create({
                   owner: "brianbolt",
