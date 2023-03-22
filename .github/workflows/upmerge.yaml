@@ -43,7 +43,7 @@ jobs:
             for (let i = 0; i < protectedBranches.data.length - 1; i++) {
               const sourceBranch = protectedBranches.data[i].name
               const targetBranch = protectedBranches.data[i + 1].name
-              console.log(`Checking diffs from ${sourceBranch} to ${targetBranch}`)
+              console.log(`Checking commits between ${sourceBranch} to ${targetBranch}`)
               // Check if there are diffs between the 2 branches
               const diff = await github.rest.repos.compareCommits({
                 owner: "brianbolt",
@@ -56,7 +56,7 @@ jobs:
                 continue
               } else {
                 // List the commits in the diff
-                console.log(`Commits in diff from ${sourceBranch} to ${targetBranch}: ${diff.data.commits.map(commit => commit.sha).join(", ")}}`)
+                console.log(`Diffs commits between ${sourceBranch} to ${targetBranch}: ${diff.data.commits.map(commit => commit.sha).join(", ")}}`)
               }
               // Check if a pull request already exists for these branches
               const pullRequests = await github.rest.pulls.list({
@@ -75,14 +75,14 @@ jobs:
              // If apiUser is a reviewer, remove them but tag them in the description
               addApiUser = false
               if (uniqueReviewers.includes(apiUser)) {
-                console.log("Removing api user " + apiUser + " from reviewers")
+                console.log("Removing api user " + apiUser + " from reviewers and adding to description reviewers instead")
                 console.log("uniqueReviewers: " + uniqueReviewers)
                 uniqueReviewers.splice(uniqueReviewers.indexOf(apiUser), 1)
                 addApiUser = true
               }
               // If the PR doesn't exist then create it
               if (pullRequests.data.length == 0) {
-                // If the PR doesn't exist then create it
+                console.log(`Creating pull request from ${sourceBranch} to ${targetBranch}`)
                 // Create the description for the pull request
                 const description = "## Description\n\n" +
                 "This pull request was created by the upmerge workflow.\n\n" +
@@ -99,11 +99,12 @@ jobs:
                   base: targetBranch
                 }).data
               } else {
+                console.log(`Pull request from ${sourceBranch} to ${targetBranch} already exists`)
                 // Set the pull request to the existing one
                 var pullRequest = pullRequests.data[0]
               }
               // Print the pull request
-              console.log(pullRequest)
+              console.log(`Pull request number: ${pullRequest.number}`)
               // Add the upmerge label to the pull request
               await github.rest.issues.addLabels({
                 owner: "brianbolt",
