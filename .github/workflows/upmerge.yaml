@@ -74,13 +74,10 @@ jobs:
               if (uniqueReviewers.includes(apiUser)) {
                 console.log("Removing api user " + apiUser + " from reviewers")
                 console.log("uniqueReviewers: " + uniqueReviewers)
-                // Remove the api user from the reviewers
-                indexOfApiUser = uniqueReviewers.indexOf(apiUser)
-                console.log("indexOfApiUser: " + indexOfApiUser)
-                uniqueReviewers.splice(indexOfApiUser, 1)
+                uniqueReviewers.splice(uniqueReviewers.indexOf(apiUser), 1)
                 addApiUser = true
               }
-              // If the PR exists then add any missing reviewers
+              // If the PR doesn't exist then create it
               if (pullRequests.data.length == 0) {
                 // If the PR doesn't exist then create it
                 // Create the description for the pull request
