@@ -122,7 +122,6 @@ jobs:
               // If the PR doesnn't already have an assignee then add it
               if (pullRequest.assignee == null) {
                 // Assign the pull request to the assignee
-                console.log(`Pull request ${pullRequest.number} doesn't have an assignee`)
                 await github.rest.issues.addAssignees({
                   owner: "brianbolt",
                   repo: "${{ matrix.repo }}",
