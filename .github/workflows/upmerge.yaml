@@ -90,14 +90,15 @@ jobs:
                 uniqueReviewers.map(reviewer => `@${reviewer}`).join(" ") + "\n\n" +
                 (addApiUser ? `@${apiUser}` : "")
                 // Create the pull request
-                var pullRequest = await github.rest.pulls.create({
+                var response = await github.rest.pulls.create({
                   owner: "brianbolt",
                   repo: "${{ matrix.repo }}",
                   title: `Upmerge ${sourceBranch} to ${targetBranch}`,
                   body: description,
                   head: sourceBranch,
                   base: targetBranch
-                }).data
+                })
+                pullRequest = response.data
               } else {
                 console.log(`Pull request from ${sourceBranch} to ${targetBranch} already exists`)
                 // Set the pull request to the existing one
