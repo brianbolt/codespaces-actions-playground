@@ -1,4 +1,4 @@
-name: Create Upmerge Pull Requests
+name: Create upmerge pull requests
 
 # **What it does**: Loops through protected branches and creates pull requests to upmerge them if there are any commits between them.
 # **Why we have it**: To automate the process of upmerging branches.
@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        repo: [ codespaces-actions-playground, codespaces-actions-playground ]
+        repo: [ codespaces-actions-playground ]
         owner: [ brianbolt ]
     steps:
       - name: Create pull requests to upmerge branches to main
