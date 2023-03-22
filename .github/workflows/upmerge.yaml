@@ -69,10 +69,11 @@ jobs:
               const assignee = reviewers[reviewers.length - 1]
               // Remove any duplicate reviewers
               const uniqueReviewers = [...new Set(reviewers)]
-             // If brian bolt is a reviewer, remove him but tag him in the description
+             // If apiUser is a reviewer, remove them but tag them in the description
               addApiUser = false
               if (uniqueReviewers.includes(apiUser)) {
                 console.log("Removing api user " + apiUser + " from reviewers")
+                console.log("uniqueReviewers: " + uniqueReviewers)
                 uniqueReviewers.splice(uniqueReviewers.indexOf(apiUser), 1)
                 addApiUser = true
               }
@@ -84,7 +85,7 @@ jobs:
                 "This pull request was created by the upmerge workflow.\n\n" +
                 "## Reviewers\n\n" +
                 uniqueReviewers.map(reviewer => `@${reviewer}`).join(" ") + "\n\n" +
-                (addApiUser ? "@" + apiUser : "")
+                (addApiUser ? `@{apiUser}` : "")
                 // Create the pull request
                 var pullRequest = await github.rest.pulls.create({
                   owner: "brianbolt",
