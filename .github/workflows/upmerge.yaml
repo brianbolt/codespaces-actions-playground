@@ -76,7 +76,6 @@ jobs:
               addApiUser = false
               if (uniqueReviewers.includes(apiUser)) {
                 console.log("Removing api user " + apiUser + " from reviewers and adding to description reviewers instead")
-                console.log("uniqueReviewers: " + uniqueReviewers)
                 uniqueReviewers.splice(uniqueReviewers.indexOf(apiUser), 1)
                 addApiUser = true
               }
@@ -99,6 +98,7 @@ jobs:
                   base: targetBranch
                 })
                 pullRequest = createPullRequestResponse.data
+                console.log(`Created pull request ${pullRequest.number}`)
               } else {
                 console.log(`Pull request from ${sourceBranch} to ${targetBranch} already exists`)
                 // Set the pull request to the existing one
@@ -121,16 +121,18 @@ jobs:
                   pull_number: pullRequest.number,
                   reviewers: uniqueReviewers
                 })
+                console.log(`Added reviewers to pull request ${pullRequest.number}: ${uniqueReviewers.join(", ")}`)
               }
               // If the PR doesnn't already have an assignee then add it
               if (pullRequest.assignee == null) {
                 // Assign the pull request to the assignee
+                console.log(`Pull request ${pullRequest.number} doesn't have an assignee`)
                 await github.rest.issues.addAssignees({
                   owner: "brianbolt",
                   repo: "${{ matrix.repo }}",
                   issue_number: pullRequest.number,
                   assignees: [assignee]
                 })
+                console.log(`Assigned pull request ${pullRequest.number} to ${assignee}`)
               }
-              console.log(`Created pull request ${pullRequest.number}`)
             }
