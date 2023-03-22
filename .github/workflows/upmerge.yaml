@@ -90,7 +90,7 @@ jobs:
                 const createPullRequestResponse = await github.rest.pulls.create({
                   owner: "brianbolt",
                   repo: "${{ matrix.repo }}",
-                  title: `Upmerge ${sourceBranch} to ${targetBranch}`,
+                  title: `⬆️merge ${sourceBranch} to ${targetBranch}`,
                   body: description,
                   head: sourceBranch,
                   base: targetBranch
