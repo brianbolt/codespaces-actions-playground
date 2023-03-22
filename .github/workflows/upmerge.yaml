@@ -90,7 +90,7 @@ jobs:
                 const createPullRequestResponse = await github.rest.pulls.create({
                   owner: "brianbolt",
                   repo: "${{ matrix.repo }}",
-                  title: `⬆️merge ${sourceBranch} to ${targetBranch}`,
+                  title: `⬆️ Umerge ${sourceBranch} to ${targetBranch}`,
                   body: description,
                   head: sourceBranch,
                   base: targetBranch
@@ -107,7 +107,7 @@ jobs:
                 owner: "brianbolt",
                 repo: "${{ matrix.repo }}",
                 issue_number: pullRequest.number,
-                labels: ["upmerge"]
+                labels: ["⬆️ Upmerge"]
               })
               // Add the reviewers to the pull request if there are any
               if (uniqueReviewers.length > 0) {
