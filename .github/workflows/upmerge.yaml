@@ -17,8 +17,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        repo: [ codespaces-actions-playground ]
-        owner: [ "brianbolt" ]
+        repo: [ codespaces-actions-playground codespaces-actions-playground ]
+        owner: [ brianbolt ]
     steps:
       - name: Create pull requests to upmerge branches to main
         uses: actions/github-script@v6
