@@ -37,7 +37,7 @@ jobs:
               }
               return a.name.localeCompare(b.name)
             })
-            console.log("Checking all protected branches for diff commits: " + protectedBranches.data.map(branch => branch.name).join(", ")
+            console.log(`Protected branches to check for diff commits: ${protectedBranches.data.map(branch => branch.name).join(", ")}`
             // Loop through the branches and create required PRs based on diffs
             for (let i = 0; i < protectedBranches.data.length - 1; i++) {
               const sourceBranch = protectedBranches.data[i].name
