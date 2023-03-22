@@ -19,8 +19,8 @@ jobs:
           github-token: ${{ secrets.ACAS_WORKFLOWS_TOKEN }}
           script: |
             // Current token user
-            const response = await github.rest.users.getAuthenticated();
-            const apiUser = response.data.login;
+            const getAuthenticatedUserResponse = await github.rest.users.getAuthenticated();
+            const apiUser = getAuthenticatedUserResponse.data.login;
             // Get all protected branches
             const protectedBranches = await github.rest.repos.listBranches({
               owner: "brianbolt",
@@ -90,14 +90,15 @@ jobs:
                 uniqueReviewers.map(reviewer => `@${reviewer}`).join(" ") + "\n\n" +
                 (addApiUser ? `@${apiUser}` : "")
                 // Create the pull request
-                var pullRequest = await github.rest.pulls.create({
+                const createPullRequestResponse = await github.rest.pulls.create({
                   owner: "brianbolt",
                   repo: "${{ matrix.repo }}",
                   title: `Upmerge ${sourceBranch} to ${targetBranch}`,
                   body: description,
                   head: sourceBranch,
                   base: targetBranch
-                }).data
+                })
+                pullRequest = createPullRequestResponse.data
               } else {
                 console.log(`Pull request from ${sourceBranch} to ${targetBranch} already exists`)
                 // Set the pull request to the existing one
