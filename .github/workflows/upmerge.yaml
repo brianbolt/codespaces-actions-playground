@@ -84,7 +84,7 @@ jobs:
                 const description = "## Description\n\n" +
                 "This pull request was created by the upmerge workflow.\n\n" +
                 // Add additional reviewers if the api user is one
-                (addApiUser ? `## Additional reviewer\n\n*tagged here because the api user for github actions owns the PR and cannot be a reviewer*\n\n@${apiUer}` : "")
+                (addApiUser ? `## Additional reviewer\n\n*tagged here because the api user for github actions owns the PR and cannot be a reviewer*\n\n@${apiUser}` : "")
                 
                 // Create the pull request
                 const createPullRequestResponse = await github.rest.pulls.create({
