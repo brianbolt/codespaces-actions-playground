@@ -18,6 +18,9 @@ jobs:
         with:
           github-token: ${{ secrets.ACAS_WORKFLOWS_TOKEN }}
           script: |
+            // Current token user
+            const response = await github.rest.users.getAuthenticated();
+            const apiUser = response.data.login;
             // Get all protected branches
             const protectedBranches = await github.rest.repos.listBranches({
               owner: "brianbolt",
@@ -67,11 +70,11 @@ jobs:
               // Remove any duplicate reviewers
               const uniqueReviewers = [...new Set(reviewers)]
              // If brian bolt is a reviewer, remove him but tag him in the description
-              add_brianbolt = false
-              if (uniqueReviewers.includes("brianbolt")) {
-                console.log("Removing brianbolt from reviewers because he can't create the pr and review it at the same time")
-                uniqueReviewers.splice(uniqueReviewers.indexOf("brianbolt"), 1)
-                add_brianbolt = true
+              addApiUser = false
+              if (uniqueReviewers.includes(apiUser)) {
+                console.log("Removing api user " + apiUser + " from reviewers")
+                uniqueReviewers.splice(uniqueReviewers.indexOf(apiUser), 1)
+                addApiUser = true
               }
               // If the PR exists then add any missing reviewers
               if (pullRequests.data.length == 0) {
@@ -81,7 +84,7 @@ jobs:
                 "This pull request was created by the upmerge workflow.\n\n" +
                 "## Reviewers\n\n" +
                 uniqueReviewers.map(reviewer => `@${reviewer}`).join(" ") + "\n\n" +
-                (add_brianbolt ? "@brianbolt" : "")
+                (addApiUser ? "@" + apiUser : "")
                 // Create the pull request
                 var pullRequest = await github.rest.pulls.create({
                   owner: "brianbolt",
