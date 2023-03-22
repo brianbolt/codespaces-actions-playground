@@ -43,7 +43,7 @@ jobs:
             for (let i = 0; i < protectedBranches.data.length - 1; i++) {
               const sourceBranch = protectedBranches.data[i].name
               const targetBranch = protectedBranches.data[i + 1].name
-              console.log(`Creating pull request from ${sourceBranch} to ${targetBranch}`)
+              console.log(`Checking diffs from ${sourceBranch} to ${targetBranch}`)
               // Check if there are diffs between the 2 branches
               const diff = await github.rest.repos.compareCommits({
                 owner: "brianbolt",
@@ -54,6 +54,9 @@ jobs:
               if (diff.data.files.length === 0) {
                 console.log(`No diffs between ${sourceBranch} and ${targetBranch}`)
                 continue
+              } else {
+                // List the commits in the diff
+                console.log(`Commits in diff from ${sourceBranch} to ${targetBranch}: ${diff.data.commits.map(commit => commit.sha).join(", ")}}`)
               }
               // Check if a pull request already exists for these branches
               const pullRequests = await github.rest.pulls.list({
