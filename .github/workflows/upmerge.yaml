@@ -5,8 +5,8 @@ name: Create upmerge pull requests
 
 on:
   # Run every 3 hours on the hour
-  schedule:
-    - cron: "0 */3 * * *"
+  # schedule:
+  #   - cron: "0 */3 * * *"
   # Trigger on demand
   workflow_dispatch:
   # Trigger on new commits to release branches for acas repo
